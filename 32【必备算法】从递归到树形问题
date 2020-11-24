@@ -1,0 +1,127 @@
+递归和迭代都是解决重复子问题的**编码方式**，并称不上是一个算法。两者的区别是递归的思想是分解，而迭代的思想是渐进，比如现在求6的阶乘：
+* 迭代：从1开始乘，6! = 1 * 2 *3 * 4 * 5 * 6 
+* 递归：从6开始，f(6) = 6 * f(5) + 结束条件 n=1
+
+所以递归很适合解决树形问题，这里可以将树分成两类
+* 实际树形，即实际的二叉树 ==> 先尝试直接使用递归，不行了再用下面的算法。
+ 	注：可以记忆成二叉树的深度优先遍历，广度优先遍历与算法无关系。但是可以根据 基本递归->深度优先，BFS算法->广度优先遍历
+* 逻辑树形，即应用建模的树 ==> 四种算法：**搜索(DFS/BFS)、分治、回溯、动归**
+
+## 1.分解(树)模型
+分解模型：目标问题可以分解成**子问题**，并能够写出**递推公式**，一般是树形结构（如下图）
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20201013200327939.png#pic_center)
+>怎么写递推公式？
+>1. 实际树形：`f(root) <= f(root.left/right)`。比如`f(root) = max( f(root.left), f(root.right)) + 1 --> 结束条件：root==null`
+>2. 应用树形：`f(n) <= f(n-1)`。比如`f(n) = f(n-1) + f(n-1) --> 结束条件 n=length`
+>
+>注：虽然画的树形图可能是自底向上的，但递推公式仍要自顶向下的写
+
+>自顶向下与自底向上？
+>* 自顶向下：从问题的结果入手反推已知，比如上面要求fib(5)那么就从fib(5)开始向下面的f(0)走
+>* 自底向上：从已知出发不断通过中间状态去求最终答案，比如求fib(5)那么就从fib(0)开始向上求fib(5)
+### 1.1 分治（自顶向下）
+使用场景：分解模型
+
+```java
+// 递推公式 ==> 分治模板
+// 注：subproblem 和 mergeresult经常可以根据递推公式写在一起
+res f (level, info) {
+	// termination
+	
+	// subproblems
+	
+	// mergeresult
+} 
+```
+
+### 1.2 动态规划（自底向上）
+使用场景：分解模型 && 存在重复子问题（常用于求解最优子问题，与贪心的区别是贪心是一位局部最优，而动归是树形整体最优）
+![](https://img-blog.csdnimg.cn/20201019162630424.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80MzkzNTkyNw==,size_16,color_FFFFFF,t_70#pic_center)
+
+```java
+// 递推公式 ==> 动归模板（原理：会有一个状态数组保存所有中间结果）
+1.状态定义：本题的状态是什么。形式为d[i] 或 d[i][j]。
+2 初始状态：后面状态递推的依据。
+	* 一维数组：初始状态一般是 d[0]，若在递推时需要两个之前状态，那么就还要初始d[1]
+	* 二维数组：初始状态一般是两行 d[0][i] 和 d[i][0] ，但也可能是两个点d[0][0] 和 d[0][1]。（注：如果初始值是0，就不用再显示声明）
+3.状态递推：自底向上，以初始状态为基础求出所有状态的公式。
+	* 状态递推其实是一个填表的过程。
+	* dp方程可以通过递推公式得到。
+4.最终状态：问题的答案。
+
+#5.状态优化：有的题可以优化成单个变量（O(1)），不是一定要数组（O(1)）
+   ```
+   注：不是所有子问题都能通过自底向上解决。
+
+### 1.3 记忆递归（自顶向下）
+使用场景：分解模型 && 存在重复子问题
+ ```java
+ // 自顶向下的递推公式 ==> 记忆递归模板
+ // 注：1.状态数组visit由主函数创建，以函参传入递归函数
+ //    2.与分治模板区别，就是在分解问题前多了个状态存在判断
+ res f (level，visit, info) {
+	// termination
+	
+	if (!visit[level]) {
+		 // subproblem
+		 // mergeresult
+	}
+	
+	return visit[level]
+ }
+   ```
+
+
+## 2.枚举(树)模型
+枚举模型：问题可以构成一个**树型**，且需要的**结果在叶节点**，也可叫搜索树。
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20201013200137967.png#pic_center)
+### 2.1 DFS（深度优先搜索）
+使用场景：基本树形
+```java
+// 注：定义函数时先思考层变量var，然后再想剩余两个，因为level和info可能直接就用层变量表示了。
+void dfs(level, var, info) {
+	// termination
+	
+	// process
+
+	// down
+}
+```
+注：除了树形问题外，DFS还可以用于搜索场景，如岛屿数量
+
+### 2.2 BFS（广度优先搜索）
+使用场景：**树型且需要层序遍历**。BFS实际上可以分为两类：
+
+* 点序遍历：逐点打印。最基础的BFS，一般不用
+* 层序遍历：逐行打印。现在说BFS一般都指层序遍历（✔）
+```java
+void bfs(TreeNode root) {   
+        Queue<TreeNode> queue = new LinkedList<>() {{ offer(root); }};
+
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                if (node.left != null) queue.offer(node.left);
+                if (node.right != null) queue.offer(node.right);
+            }
+        }
+}
+```
+### 2.3 回溯
+使用场景：树形且回退（**层变量一般是集合/数组**），所以需要状态回退后再进入下层。比如子集，八皇后
+![在这里插入图片描述](https://img-blog.csdnimg.cn/20201013200400714.png#pic_center)
+```java
+// 注：定义函数时先思考层变量var，然后再想剩余两个，因为level和info可能直接就用层变量表示了。
+void dfs(level, var, info) {
+	// termination
+
+	// process
+	
+	// down
+
+	// revert
+}
+```
+
